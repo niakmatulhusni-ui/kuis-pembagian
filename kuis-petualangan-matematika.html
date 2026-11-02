@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Petualangan Matematika — Kelas 4 SD</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --c-sky1: #aee4ff;
+    --c-sky2: #d8f7e8;
+    --c-ink: #1f3a5f;
+    --c-ink-soft: #5b6b85;
+    --c-paper: #ffffff;
+    --c-primary: #ff8a3d;
+    --c-primary-dark: #ef6d1d;
+    --c-correct: #2ecc71;
+    --c-wrong: #ef5350;
+    --c-accent: #6c5ce7;
+    --c-gold: #ffd166;
+    --radius: 18px;
+    --shadow: 0 10px 25px rgba(31, 58, 95, 0.15);
+  }
+  html, body { height: 100%; }
+  body {
+    font-family: "Baloo 2", "Comic Sans MS", "Segoe UI", system-ui, -apple-system, sans-serif;
+    color: var(--c-ink);
+    background: linear-gradient(180deg, var(--c-sky1) 0%, var(--c-sky2) 100%);
+    min-height: 100vh;
+    padding: 16px;
+    overflow-x: hidden;
+  }
+  .clouds { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+  .cloud { position: absolute; font-size: 56px; opacity: 0.85; animation: float 18s linear infinite; }
+  .cloud:nth-child(1) { top: 8%;  left: -10%; animation-duration: 26s; }
+  .cloud:nth-child(2) { top: 22%; left: -20%; animation-duration: 34s; animation-delay: -8s; }
+  .cloud:nth-child(3) { top: 60%; left: -15%; animation-duration: 30s; animation-delay: -14s; }
+  @keyframes float { from { transform: translateX(0); } to { transform: translateX(130vw); } }
+
+  .app { position: relative; z-index: 1; max-width: 720px; margin: 0 auto; }
+
+  .screen { display: none; }
+  .screen.active { display: block; animation: pop 0.4s ease; }
+  @keyframes pop { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+  /* Start screen */
+  .start {
+    background: var(--c-paper);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 36px 24px 32px;
+    text-align: center;
+    margin-top: 24px;
+  }
+  .mascot { font-size: 86px; line-height: 1; animation: bob 2.4s ease-in-out infinite; }
+  @keyframes bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+  h1 { font-size: 32px; color: var(--c-primary-dark); margin: 8px 0 4px; letter-spacing: 0.5px; }
+  .subtitle { font-size: 16px; color: var(--c-ink-soft); margin-bottom: 6px; }
+  .lead { font-size: 16px; margin: 14px 0 18px; line-height: 1.5; }
+  .types {
+    text-align: left; background: #fff7ee; border: 2px dashed var(--c-gold);
+    border-radius: 14px; padding: 12px 16px; margin: 16px auto; max-width: 460px;
+  }
+  .types li { list-style: none; font-size: 14px; padding: 4px 0; color: var(--c-ink); }
+  .types li b { color: var(--c-primary-dark); }
+
+  .big-btn {
+    background: linear-gradient(180deg, var(--c-primary) 0%, var(--c-primary-dark) 100%);
+    color: #fff; border: none; border-radius: 999px;
+    padding: 14px 32px; font-size: 20px; font-family: inherit; font-weight: 700;
+    cursor: pointer; box-shadow: 0 6px 0 var(--c-primary-dark); transition: transform 0.08s, box-shadow 0.08s;
+    margin-top: 8px;
+  }
+  .big-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--c-primary-dark); }
+
+  /* Quiz screen */
+  header.bar { background: var(--c-paper); border-radius: 14px; box-shadow: var(--shadow); padding: 10px 14px; margin-bottom: 12px; }
+  .progress { height: 12px; background: #eef3f8; border-radius: 999px; overflow: hidden; }
+  .progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--c-primary), var(--c-gold)); transition: width 0.4s ease; }
+  .meta { display: flex; justify-content: space-between; align-items: center; margin-top: 6px; font-size: 14px; color: var(--c-ink-soft); font-weight: 700; }
+  .meta .score { color: var(--c-primary-dark); }
+
+  .card {
+    background: var(--c-paper); border-radius: var(--radius);
+    box-shadow: var(--shadow); padding: 22px 20px 24px;
+  }
+  .q-icon { font-size: 48px; line-height: 1; text-align: center; }
+  .card h2 { font-size: 22px; color: var(--c-accent); text-align: center; margin: 4px 0 10px; }
+  .q-prompt { font-size: 17px; line-height: 1.55; color: var(--c-ink); margin-bottom: 14px; }
+  .q-equation {
+    text-align: center; font-size: 28px; font-weight: 800;
+    background: #fff7ee; border: 2px solid var(--c-gold);
+    border-radius: 12px; padding: 8px 12px; margin: 0 auto 16px; max-width: 360px;
+  }
+  .answer-area { margin-top: 6px; }
+
+  /* Keypad */
+  .keypad-display {
+    font-size: 34px; font-weight: 800; text-align: center;
+    background: #f4f9ff; border: 2px solid var(--c-accent); color: var(--c-accent);
+    border-radius: 12px; padding: 14px; min-height: 64px; letter-spacing: 4px;
+  }
+  .keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 12px; }
+  .key {
+    background: #fff; border: 2px solid #d6e3f0; border-radius: 14px;
+    font-size: 24px; font-weight: 700; font-family: inherit; color: var(--c-ink);
+    padding: 16px 0; cursor: pointer; transition: transform 0.06s, background 0.12s;
+  }
+  .key:hover { background: #f0f7ff; }
+  .key:active { transform: scale(0.94); }
+  .key.clear { color: var(--c-wrong); border-color: #ffc2c0; }
+  .key.del { color: var(--c-accent); border-color: #d9d2ff; }
+
+  /* Choice buttons */
+  .choices { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .choice-btn {
+    background: #fff; border: 3px solid #d6e3f0; border-radius: 16px;
+    padding: 18px 8px; font-size: 26px; font-weight: 800; font-family: inherit;
+    color: var(--c-accent); cursor: pointer; transition: transform 0.08s, border-color 0.12s, background 0.12s;
+  }
+  .choice-btn:hover { background: #f4f9ff; }
+  .choice-btn:active { transform: scale(0.96); }
+  .choice-btn.selected { border-color: var(--c-primary); background: #fff3e8; color: var(--c-primary-dark); }
+  .choice-btn .door { display: block; font-size: 22px; color: var(--c-ink-soft); font-weight: 600; margin-top: 2px; }
+
+  /* Slider */
+  .slider-wrap { text-align: center; }
+  .slider-val { font-size: 56px; font-weight: 800; color: var(--c-accent); margin: 6px 0; }
+  .slider-range {
+    width: 100%; -webkit-appearance: none; appearance: none;
+    height: 22px; border-radius: 999px; background: linear-gradient(90deg, var(--c-sky1), var(--c-gold));
+    outline: none;
+  }
+  .slider-range::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none; width: 44px; height: 44px; border-radius: 50%;
+    background: var(--c-primary); border: 4px solid #fff; box-shadow: 0 3px 8px rgba(0,0,0,0.2); cursor: pointer;
+  }
+  .slider-range::-moz-range-thumb {
+    width: 44px; height: 44px; border-radius: 50%; background: var(--c-primary);
+    border: 4px solid #fff; cursor: pointer;
+  }
+  .slider-scale { display: flex; justify-content: space-between; font-size: 12px; color: var(--c-ink-soft); margin-top: 6px; padding: 0 6px; }
+
+  /* Step inputs */
+  .step { background: #f4f9ff; border: 2px solid #d6e3f0; border-radius: 14px; padding: 12px 14px; margin-bottom: 10px; }
+  .step label { display: block; font-size: 15px; color: var(--c-ink); margin-bottom: 6px; font-weight: 600; }
+  .step input {
+    width: 100%; font-size: 24px; font-weight: 800; font-family: inherit;
+    text-align: center; border: 2px solid var(--c-accent); color: var(--c-accent);
+    border-radius: 10px; padding: 8px; background: #fff;
+  }
+  .step input:focus { outline: none; border-color: var(--c-primary); color: var(--c-primary-dark); }
+  .step.ok { border-color: var(--c-correct); background: #eafaf1; }
+  .step.bad { border-color: var(--c-wrong); background: #fdecec; }
+
+  /* Stepper counter (visual) */
+  .stepper { text-align: center; }
+  .stepper-val { font-size: 64px; font-weight: 800; color: var(--c-accent); margin: 4px 0 8px; }
+  .stepper-row { display: flex; justify-content: center; gap: 18px; margin-bottom: 12px; }
+  .stepper-btn {
+    width: 64px; height: 64px; border-radius: 50%; border: none;
+    background: var(--c-primary); color: #fff; font-size: 36px; font-weight: 800;
+    font-family: inherit; cursor: pointer; box-shadow: 0 5px 0 var(--c-primary-dark);
+    transition: transform 0.08s, box-shadow 0.08s;
+  }
+  .stepper-btn:active { transform: translateY(4px); box-shadow: 0 1px 0 var(--c-primary-dark); }
+  .stepper-btn.minus { background: var(--c-accent); box-shadow: 0 5px 0 #4a3bbd; }
+  .stepper-btn.minus:active { box-shadow: 0 1px 0 #4a3bbd; }
+  .box-strip { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; min-height: 70px; margin-top: 6px; }
+  .box-tile { width: 26px; height: 26px; border-radius: 6px; background: linear-gradient(180deg, #ffd580, #ff9a3d);
+    border: 2px solid #ef6d1d; display: grid; place-items: center; font-size: 10px; color: #fff; font-weight: 700; }
+  .box-tile span { font-size: 14px; }
+  .counter-cap { font-size: 13px; color: var(--c-ink-soft); margin-top: 4px; }
+
+  /* True / False */
+  .tf-item { background: #f4f9ff; border: 2px solid #d6e3f0; border-radius: 14px; padding: 12px 14px; margin-bottom: 12px; }
+  .tf-item.ok { border-color: var(--c-correct); background: #eafaf1; }
+  .tf-item.bad { border-color: var(--c-wrong); background: #fdecec; }
+  .tf-text { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+  .tf-buttons { display: flex; gap: 10px; }
+  .tf-btn {
+    flex: 1; padding: 12px; border-radius: 12px; border: 2px solid #d6e3f0;
+    background: #fff; font-size: 17px; font-weight: 700; font-family: inherit; cursor: pointer;
+    color: var(--c-ink-soft); transition: transform 0.08s, border-color 0.12s, background 0.12s, color 0.12s;
+  }
+  .tf-btn:active { transform: scale(0.96); }
+  .tf-btn.true.sel { background: #eafaf1; border-color: var(--c-correct); color: var(--c-correct); }
+  .tf-btn.false.sel { background: #fdecec; border-color: var(--c-wrong); color: var(--c-wrong); }
+  .tf-explain { font-size: 13px; color: var(--c-ink-soft); margin-top: 6px; min-height: 16px; }
+
+  /* Order drag (click to place) */
+  .order-pool { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+  .tile {
+    background: #fff; border: 2px solid var(--c-accent); color: var(--c-accent);
+    border-radius: 12px; padding: 12px 14px; font-size: 15px; font-weight: 600;
+    cursor: pointer; transition: transform 0.08s, background 0.12s, opacity 0.12s;
+  }
+  .tile:hover { background: #f1ecff; }
+  .tile:active { transform: scale(0.97); }
+  .tile.used { opacity: 0.25; pointer-events: none; }
+  .order-slots { display: flex; flex-direction: column; gap: 10px; }
+  .slot {
+    min-height: 54px; border: 2px dashed #c4d3e4; border-radius: 12px;
+    display: flex; align-items: center; padding: 6px 10px; gap: 10px;
+  }
+  .slot-num {
+    width: 30px; height: 30px; border-radius: 50%; background: var(--c-gold);
+    color: #5b4a1a; font-weight: 800; display: grid; place-items: center; flex-shrink: 0;
+  }
+  .slot .tile { flex: 1; cursor: pointer; border-color: var(--c-primary); color: var(--c-primary-dark); background: #fff3e8; }
+  .slot.empty .slot-hint { color: var(--c-ink-soft); font-size: 14px; font-style: italic; }
+  .order-tip { font-size: 13px; color: var(--c-ink-soft); text-align: center; margin-bottom: 8px; }
+
+  /* Actions */
+  .actions { display: flex; gap: 10px; justify-content: center; margin-top: 14px; flex-wrap: wrap; }
+  .act-btn {
+    background: #fff; border: 2px solid var(--c-accent); color: var(--c-accent);
+    border-radius: 999px; padding: 10px 18px; font-size: 15px; font-weight: 700;
+    font-family: inherit; cursor: pointer; transition: transform 0.08s, background 0.12s;
+  }
+  .act-btn:hover { background: #f1ecff; }
+  .act-btn:active { transform: scale(0.96); }
+  .act-btn.primary {
+    background: linear-gradient(180deg, var(--c-primary), var(--c-primary-dark));
+    border-color: var(--c-primary-dark); color: #fff; box-shadow: 0 5px 0 var(--c-primary-dark);
+  }
+  .act-btn.primary:active { transform: translateY(4px); box-shadow: 0 1px 0 var(--c-primary-dark); }
+  .act-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+  .act-btn.hint { background: #fffbe6; border-color: var(--c-gold); color: #94720f; }
+
+  .feedback {
+    margin-top: 12px; padding: 12px 14px; border-radius: 12px; font-size: 16px; font-weight: 700;
+    text-align: center; min-height: 0; max-height: 0; overflow: hidden; opacity: 0;
+    transition: max-height 0.3s ease, opacity 0.3s ease, padding 0.3s ease;
+  }
+  .feedback.show { max-height: 200px; opacity: 1; }
+  .feedback.correct { background: #eafaf1; color: var(--c-correct); border: 2px solid var(--c-correct); }
+  .feedback.wrong { background: #fdecec; color: var(--c-wrong); border: 2px solid var(--c-wrong); }
+  .feedback.partial { background: #fff3e8; color: var(--c-primary-dark); border: 2px solid var(--c-primary); }
+
+  /* Result screen */
+  .result { background: var(--c-paper); border-radius: var(--radius); box-shadow: var(--shadow); padding: 36px 24px; text-align: center; margin-top: 24px; }
+  .result h1 { font-size: 30px; color: var(--c-primary-dark); }
+  .score-display { font-size: 60px; font-weight: 800; color: var(--c-accent); margin: 10px 0 4px; }
+  .score-display .total { color: var(--c-ink-soft); font-size: 36px; }
+  .stars { font-size: 36px; margin: 6px 0 12px; letter-spacing: 4px; }
+  .result-msg { font-size: 17px; color: var(--c-ink-soft); margin-bottom: 18px; line-height: 1.5; }
+  .review { text-align: left; max-width: 480px; margin: 0 auto 16px; background: #f4f9ff; border-radius: 12px; padding: 10px 14px; }
+  .review li { list-style: none; font-size: 14px; padding: 4px 0; border-bottom: 1px dashed #d6e3f0; }
+  .review li:last-child { border-bottom: none; }
+  .review .ok { color: var(--c-correct); font-weight: 700; }
+  .review .no { color: var(--c-wrong); font-weight: 700; }
+
+  /* Identity form (start screen) */
+  .id-form {
+    background: #f4f9ff; border: 2px solid var(--c-accent);
+    border-radius: 14px; padding: 14px 16px; margin: 14px auto 4px; max-width: 420px;
+    text-align: left;
+  }
+  .id-form .id-row { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
+  .id-form .id-row:last-child { margin-bottom: 0; }
+  .id-form label { font-size: 14px; font-weight: 700; color: var(--c-ink); }
+  .id-form input {
+    font-family: inherit; font-size: 18px; padding: 10px 12px;
+    border: 2px solid #d6e3f0; border-radius: 10px; background: #fff; color: var(--c-ink);
+  }
+  .id-form input:focus { outline: none; border-color: var(--c-primary); }
+  .id-error { color: var(--c-wrong); font-size: 13px; font-weight: 700; min-height: 16px; margin: 4px auto 8px; text-align: center; }
+
+  /* Identity badge (quiz header & result) */
+  .id-badge {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    font-size: 14px; font-weight: 700; color: var(--c-accent);
+    background: #f1ecff; border-radius: 999px; padding: 4px 14px; margin: 0 auto 8px; width: fit-content;
+  }
+  .id-badge .avatar {
+    width: 26px; height: 26px; border-radius: 50%; background: var(--c-primary); color: #fff;
+    display: grid; place-items: center; font-size: 14px; font-weight: 800;
+  }
+  .result .id-badge { margin-bottom: 14px; }
+
+  /* Retry button */
+  .act-btn.retry { background: #fff3e8; border-color: var(--c-primary); color: var(--c-primary-dark); }
+  .act-btn.retry:hover { background: #ffe8d6; }
+
+  /* Confetti */
+  .confetti { position: fixed; inset: 0; pointer-events: none; z-index: 50; }
+  .confetti i { position: absolute; top: -20px; font-size: 20px; animation: fall linear forwards; }
+  @keyframes fall { to { transform: translateY(110vh) rotate(720deg); } }
+
+  @media (max-width: 480px) {
+    h1 { font-size: 26px; }
+    .q-equation { font-size: 24px; }
+    .choices { grid-template-columns: 1fr 1fr; }
+    .keypad-display { font-size: 28px; }
+  }
+</style>
+</head>
+<body>
+<div class="clouds">
+  <div class="cloud">☁️</div>
+  <div class="cloud">☁️</div>
+  <div class="cloud">☁️</div>
+</div>
+
+<main class="app">
+  <!-- START -->
+  <section id="start-screen" class="screen active">
+    <div class="start">
+      <div class="mascot">🦊</div>
+      <h1>Petualangan Matematika</h1>
+      <p class="subtitle">Mencari Harta Karun Pembagian</p>
+      <p class="lead">Hai petualang cilik! 🌟 Paman Rubah menyiapkan <b>8 rintangan</b> seru tentang pembagian. Setiap rintangan punya cara menjawab yang berbeda-loh. Tapi sebelum mulai, isi dulu identitasmu ya — supaya Paman Rubah tahu siapa juaranya!</p>
+      <div class="id-form">
+        <div class="id-row">
+          <label for="student-name">🧑 Nama Siswa</label>
+          <input id="student-name" type="text" placeholder="Tulis namamu di sini…" autocomplete="off" maxlength="30">
+        </div>
+        <div class="id-row">
+          <label for="student-class">🏫 Kelas</label>
+          <input id="student-class" type="text" placeholder="Contoh: 4 A" autocomplete="off" maxlength="20">
+        </div>
+      </div>
+      <p class="id-error" id="id-error"></p>
+      <ul class="types">
+        <li>🔢 <b>Tombol angka</b> seperti kalkulator</li>
+        <li>🚪 <b>Pilih pintu</b> berisi angka yang benar</li>
+        <li>🎚️ <b>Geser tuas</b> di garis angka</li>
+        <li>🎒 <b>Dua langkah</b> hitungan berurutan</li>
+        <li>🧁 <b>Tambah/kurangi kotak</b> sambil melihat gambar</li>
+        <li>📚 <b>Lengkapi beberapa kotak</b> sekaligus</li>
+        <li>🏅 <b>Benar atau Salah</b> untuk dua pernyataan</li>
+        <li>🌱 <b>Susun urutan langkah</b> penyelesaian</li>
+      </ul>
+      <button id="start-btn" class="big-btn">Mulai Petualangan! 🚀</button>
+    </div>
+  </section>
+
+  <!-- QUIZ -->
+  <section id="quiz-screen" class="screen">
+    <header class="bar">
+      <div class="id-badge" id="id-badge"><span class="avatar" id="id-avatar">?</span><span id="id-text">Siswa</span></div>
+      <div class="progress"><div class="progress-fill" id="progress-fill"></div></div>
+      <div class="meta">
+        <span id="q-counter">Soal 1 dari 8</span>
+        <span class="score" id="q-score">⭐ 0</span>
+      </div>
+    </header>
+    <div class="card" id="question-card"></div>
+    <div class="actions">
+      <button id="hint-btn" class="act-btn hint">💡 Petunjuk</button>
+      <button id="check-btn" class="act-btn primary">Periksa Jawaban ✅</button>
+      <button id="retry-btn" class="act-btn retry" hidden>🔄 Coba Sekali Lagi</button>
+      <button id="next-btn" class="act-btn primary" hidden>Lanjut ➡️</button>
+    </div>
+    <div id="feedback" class="feedback"></div>
+  </section>
+
+  <!-- RESULT -->
+  <section id="result-screen" class="screen">
+    <div class="result">
+      <div class="mascot">🎉</div>
+      <div class="id-badge" id="result-id-badge"><span class="avatar" id="result-avatar">?</span><span id="result-id-text">Siswa</span></div>
+      <h1 id="result-title">Petualangan Selesai!</h1>
+      <div class="score-display"><span id="final-score">0</span><span class="total"> / 8</span></div>
+      <div class="stars" id="star-row"></div>
+      <p class="result-msg" id="result-message"></p>
+      <ul class="review" id="review-list"></ul>
+      <div class="actions" style="justify-content:center; gap:12px; margin-top:4px;">
+        <button id="restart-btn" class="big-btn">Main Lagi! 🔁</button>
+        <button id="change-btn" class="act-btn">Ganti Pemain 👤</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+"use strict";
+
+const QUESTIONS = [
+  {
+    id: 1, type: "keypad", icon: "🔢",
+    title: "Soal 1 — Pulau Angka Ajaib",
+    prompt: "Sebuah kapsul harta berisi 96 butir permata. Permata itu dibagi rata ke 6 kotak. Berapa permata di setiap kotak?",
+    equation: "96 ÷ 6 = ?",
+    answer: 16,
+    hint: "Pisahkan 96 jadi 60 + 36. Lalu 60 ÷ 6 = 10 dan 36 ÷ 6 = 6. Tambahkan hasilnya!"
+  },
+  {
+    id: 2, type: "choice", icon: "🚪",
+    title: "Soal 2 — Hutan Empat Pintu",
+    prompt: "Ada 84 kristal warna-warni untuk dibagi rata ke 7 gua. Buka pintu yang menunjukkan jumlah kristal di tiap gua!",
+    equation: "84 ÷ 7 = ?",
+    choices: [11, 12, 13, 14],
+    answer: 12,
+    hint: "84 = 70 + 14. 70 ÷ 7 = 10, lalu 14 ÷ 7 = 2. Jumlahnya = ?"
+  },
+  {
+    id: 3, type: "slider", icon: "🎚️",
+    title: "Soal 3 — Gua Tuas Rahasia",
+    prompt: "Geser tuas ke angka hasil 92 ÷ 4. Angka itu membuka pintu gua!",
+    equation: "92 ÷ 4 = ?",
+    min: 10, max: 35, answer: 23,
+    hint: "92 = 80 + 12. 80 ÷ 4 = 20, 12 ÷ 4 = 3. Hasilnya = ?"
+  },
+  {
+    id: 4, type: "twostep", icon: "🎒",
+    title: "Soal 4 — Petualangan Buku Sekolah",
+    prompt: "Sekolah membeli 96 buku tulis untuk dibagikan merata kepada 4 kelas. Setiap kelas lalu membagi bukunya kepada 6 siswa yang membutuhkan. Berapa buku yang diterima setiap siswa? Isi dua kotak ini!",
+    steps: [
+      { label: "Langkah 1 — Buku per kelas:  96 ÷ 4 =", answer: 24 },
+      { label: "Langkah 2 — Buku per siswa:  (hasil di atas) ÷ 6 =", answer: 4 }
+    ],
+    answer: 4,
+    hint: "Bagi 96 dengan 4 dulu untuk buku per kelas. Hasilnya baru dibagi lagi dengan 6."
+  },
+  {
+    id: 5, type: "stepper", icon: "🧁",
+    title: "Soal 5 — Tantangan Toko Roti",
+    prompt: "Toko roti membuat 84 kue. Kue dimasukkan ke dalam kotak yang masing-masing berisi 6 kue. Gunakan tombol + dan − untuk menambah atau mengurangi kotak. Berapa kotak penuh yang dapat dibuat?",
+    equation: "84 ÷ 6 = ?",
+    answer: 14, max: 20,
+    hint: "Coba: 6 × 14 = 84. Jadi butuh 14 kotak."
+  },
+  {
+    id: 6, type: "multistep", icon: "📚",
+    title: "Soal 6 — Misi Perpustakaan",
+    prompt: "Perpustakaan memiliki 4 rak. Setiap rak berisi 24 buku. Sebanyak 16 buku dipinjam siswa. Buku yang tersisa dibagikan merata ke 8 kelompok belajar. Lengkapi setiap kotak langkah!",
+    steps: [
+      { label: "Langkah 1 — Total buku awal:  4 × 24 =", answer: 96 },
+      { label: "Langkah 2 — Buku tersisa:  (hasil Langkah 1) − 16 =", answer: 80 },
+      { label: "Langkah 3 — Buku per kelompok:  (hasil Langkah 2) ÷ 8 =", answer: 10 }
+    ],
+    answer: 10,
+    hint: "Kalikan dulu untuk total buku, kurangi 16 yang dipinjam, lalu bagi ke 8 kelompok."
+  },
+  {
+    id: 7, type: "truefalse", icon: "🏅",
+    title: "Soal 7 — Lomba Olahraga",
+    prompt: "Sekolah membagikan 108 medali kepada 9 tim secara merata. Setiap tim lalu membagi medali mereka kepada 3 anggota terbaik. Tentukan Benar atau Salah untuk tiap pernyataan!",
+    statements: [
+      { text: "Setiap tim menerima 12 medali.", answer: true, explain: "Benar. 108 ÷ 9 = 12 medali per tim." },
+      { text: "Setiap anggota terbaik menerima 5 medali.", answer: false, explain: "Salah. 12 ÷ 3 = 4, bukan 5 medali." }
+    ],
+    hint: "Bagi 108 dengan 9 dulu, lalu bagi hasilnya dengan 3."
+  },
+  {
+    id: 8, type: "orderdrag", icon: "🌱",
+    title: "Soal 8 — Kebun Sekolah Pak Budi",
+    prompt: "Pak Budi menanam 144 bibit cabai ke 6 petak kebun dengan jumlah bibit yang sama. Tiap petak dirawat oleh 4 siswa, masing-masing bertanggung jawab atas jumlah bibit yang sama. Klik ubin untuk menyusun langkah penyelesaian secara berurutan!",
+    tiles: [
+      { id: "a", text: "Mulai dari 144 bibit dan 6 petak kebun." },
+      { id: "b", text: "Bagi 144 dengan 6 → diperoleh 24 bibit per petak." },
+      { id: "c", text: "Bagi 24 dengan 4 → diperoleh 6 bibit per siswa." }
+    ],
+    correctOrder: ["a", "b", "c"],
+    answer: 6,
+    hint: "Mulai dari data awal, bagi ke petak dulu, baru bagi ke siswa. Berapa bibit per siswa?"
+  }
+];
+
+const state = {
+  current: 0,
+  score: 0,
+  results: [],
+  answered: false,
+  getValue: null,   // function returning current answer state
+  hintShown: false,
+  retriesUsed: 0,    // 0 or 1 — counts retry attempts on the current question
+  scoredForThis: false,
+  student: { name: "", kelas: "" }
+};
+
+const $ = (sel) => document.querySelector(sel);
+const card = $("#question-card");
+const feedbackEl = $("#feedback");
+
+function showScreen(id) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+}
+
+function updateMeta() {
+  const n = state.current + 1;
+  $("#q-counter").textContent = `Soal ${n} dari ${QUESTIONS.length}`;
+  $("#q-score").textContent = `⭐ ${state.score}`;
+  $("#progress-fill").style.width = (n - 1) / QUESTIONS.length * 100 + "%";
+}
+
+// ---- Fill an identity badge (avatar initial + name + kelas) ----
+function setBadge(badgeSel, avatarSel, textSel) {
+  const badge = document.querySelector(badgeSel);
+  if (!badge) return;
+  const name = state.student.name || "Petualang";
+  const kelas = state.student.kelas ? " — Kelas " + state.student.kelas : "";
+  const initial = (name.trim()[0] || "?").toUpperCase();
+  document.querySelector(avatarSel).textContent = initial;
+  document.querySelector(textSel).textContent = name + kelas;
+}
+
+// ---- Sound (Web Audio) ----
+let audioCtx;
+function beep(freq, dur = 0.15, type = "sine") {
+  try {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.type = type; o.frequency.value = freq;
+    g.gain.value = 0.06;
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start();
+    g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + dur);
+    o.stop(audioCtx.currentTime + dur);
+  } catch (e) { /* ignore */ }
+}
+function soundOk() { beep(660, 0.12); setTimeout(() => beep(880, 0.16), 110); }
+function soundNo() { beep(200, 0.25, "square"); }
+function soundWin() { [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => beep(f, 0.18), i * 140)); }
+
+// ---- Render question ----
+function renderQuestion() {
+  const q = QUESTIONS[state.current];
+  state.answered = false;
+  state.getValue = null;
+  state.hintShown = false;
+  state.retriesUsed = 0;
+  state.scoredForThis = false;
+  $("#hint-btn").disabled = false;
+  $("#check-btn").hidden = false;
+  $("#retry-btn").hidden = true;
+  $("#next-btn").hidden = true;
+  feedbackEl.className = "feedback";
+  feedbackEl.textContent = "";
+
+  let html = `<div class="q-icon">${q.icon}</div>
+              <h2>${q.title}</h2>
+              <p class="q-prompt">${q.prompt}</p>`;
+  if (q.equation) html += `<div class="q-equation">${q.equation}</div>`;
+  html += `<div class="answer-area" id="answer-area"></div>`;
+  card.innerHTML = html;
+
+  const area = $("#answer-area");
+  switch (q.type) {
+    case "keypad": renderKeypad(q, area); break;
+    case "choice": renderChoice(q, area); break;
+    case "slider": renderSlider(q, area); break;
+    case "twostep": renderSteps(q, area, 2); break;
+    case "multistep": renderSteps(q, area, 3); break;
+    case "stepper": renderStepper(q, area); break;
+    case "truefalse": renderTrueFalse(q, area); break;
+    case "orderdrag": renderOrderDrag(q, area); break;
+  }
+  updateMeta();
+}
+
+// ---- 1. Keypad ----
+function renderKeypad(q, area) {
+  let val = "";
+  area.innerHTML = `
+    <div class="keypad-display" id="kp-display">…</div>
+    <div class="keypad">
+      <button class="key" data-k="1">1</button>
+      <button class="key" data-k="2">2</button>
+      <button class="key" data-k="3">3</button>
+      <button class="key" data-k="4">4</button>
+      <button class="key" data-k="5">5</button>
+      <button class="key" data-k="6">6</button>
+      <button class="key" data-k="7">7</button>
+      <button class="key" data-k="8">8</button>
+      <button class="key" data-k="9">9</button>
+      <button class="key clear" data-k="C">C</button>
+      <button class="key" data-k="0">0</button>
+      <button class="key del" data-k="←">←</button>
+    </div>`;
+  const disp = $("#kp-display");
+  area.querySelectorAll(".key").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const k = btn.dataset.k;
+      if (k === "C") val = "";
+      else if (k === "←") val = val.slice(0, -1);
+      else if (val.length < 4) val += k;
+      disp.textContent = val === "" ? "…" : val;
+      beep(420, 0.05);
+    });
+  });
+  state.getValue = () => val === "" ? null : parseInt(val, 10);
+}
+
+// ---- 2. Choice ----
+function renderChoice(q, area) {
+  let sel = null;
+  area.innerHTML = `<div class="choices"></div>`;
+  const wrap = area.querySelector(".choices");
+  q.choices.forEach((c, i) => {
+    const b = document.createElement("button");
+    b.className = "choice-btn";
+    b.innerHTML = `${c}<span class="door">🚪 Pintu ${i + 1}</span>`;
+    b.addEventListener("click", () => {
+      wrap.querySelectorAll(".choice-btn").forEach(x => x.classList.remove("selected"));
+      b.classList.add("selected");
+      sel = c;
+      beep(500, 0.05);
+    });
+    wrap.appendChild(b);
+  });
+  state.getValue = () => sel;
+}
+
+// ---- 3. Slider ----
+function renderSlider(q, area) {
+  area.innerHTML = `
+    <div class="slider-wrap">
+      <div class="slider-val" id="sl-val">${q.min}</div>
+      <input type="range" class="slider-range" id="sl-range" min="${q.min}" max="${q.max}" value="${q.min}">
+      <div class="slider-scale"><span>${q.min}</span><span>${Math.round((q.min+q.max)/2)}</span><span>${q.max}</span></div>
+    </div>`;
+  const range = $("#sl-range");
+  const valEl = $("#sl-val");
+  range.addEventListener("input", () => { valEl.textContent = range.value; });
+  state.getValue = () => parseInt(range.value, 10);
+}
+
+// ---- 4 & 6. Steps ----
+function renderSteps(q, area, count) {
+  area.innerHTML = "";
+  const inputs = [];
+  q.steps.forEach((s, i) => {
+    const row = document.createElement("div");
+    row.className = "step";
+    row.innerHTML = `<label>${s.label}</label><input type="text" inputmode="numeric" placeholder="?" data-i="${i}">`;
+    area.appendChild(row);
+    const inp = row.querySelector("input");
+    inp.addEventListener("input", () => {
+      inp.value = inp.value.replace(/[^0-9]/g, "");
+    });
+    inputs.push(inp);
+  });
+  state.getValue = () => inputs.map(inp => {
+    const v = inp.value.trim();
+    return v === "" ? null : parseInt(v, 10);
+  });
+  state.stepRows = () => area.querySelectorAll(".step");
+}
+
+// ---- 5. Stepper counter ----
+function renderStepper(q, area) {
+  let n = 0;
+  const max = q.max || 20;
+  area.innerHTML = `
+    <div class="stepper">
+      <div class="stepper-val" id="st-val">0</div>
+      <div class="stepper-row">
+        <button class="stepper-btn minus" data-act="-">−</button>
+        <button class="stepper-btn" data-act="+">+</button>
+      </div>
+      <div class="counter-cap">Setiap kotak = 6 kue 🧁</div>
+      <div class="box-strip" id="st-strip"></div>
+      <div class="counter-cap" id="st-cakes">0 kue terpakai dari 84</div>
+    </div>`;
+  const valEl = $("#st-val");
+  const strip = $("#st-strip");
+  const cakesEl = $("#st-cakes");
+  function refresh() {
+    valEl.textContent = n;
+    strip.innerHTML = "";
+    for (let i = 0; i < n; i++) {
+      const t = document.createElement("div");
+      t.className = "box-tile";
+      t.innerHTML = "<span>🧁</span>";
+      strip.appendChild(t);
+    }
+    cakesEl.textContent = `${n * 6} kue terpakai dari 84`;
+  }
+  area.querySelectorAll(".stepper-btn").forEach(b => {
+    b.addEventListener("click", () => {
+      const act = b.dataset.act;
+      if (act === "+" && n < max) n++;
+      else if (act === "-" && n > 0) n--;
+      refresh();
+      beep(480, 0.05);
+    });
+  });
+  refresh();
+  state.getValue = () => n;
+}
+
+// ---- 7. True / False ----
+function renderTrueFalse(q, area) {
+  const answers = q.statements.map(() => null);
+  area.innerHTML = "";
+  q.statements.forEach((s, i) => {
+    const item = document.createElement("div");
+    item.className = "tf-item";
+    item.innerHTML = `
+      <div class="tf-text">${i + 1}. ${s.text}</div>
+      <div class="tf-buttons">
+        <button class="tf-btn true" data-v="true">✅ Benar</button>
+        <button class="tf-btn false" data-v="false">❌ Salah</button>
+      </div>
+      <div class="tf-explain"></div>`;
+    area.appendChild(item);
+    const btns = item.querySelectorAll(".tf-btn");
+    btns.forEach(b => {
+      b.addEventListener("click", () => {
+        btns.forEach(x => x.classList.remove("sel"));
+        b.classList.add("sel");
+        answers[i] = (b.dataset.v === "true");
+        beep(500, 0.05);
+      });
+    });
+  });
+  state.getValue = () => answers;
+  state.tfItems = () => area.querySelectorAll(".tf-item");
+}
+
+// ---- 8. Order drag (click to place) ----
+function renderOrderDrag(q, area) {
+  const order = [];
+  let pool = [...q.tiles].sort(() => Math.random() - 0.5);
+  area.innerHTML = `
+    <div class="order-tip">Klik ubin di kolam untuk memasukkan ke urutan. Klik ubin di urutan untuk mengembalikannya.</div>
+    <div class="order-pool" id="od-pool"></div>
+    <div class="order-slots" id="od-slots"></div>`;
+  const poolEl = $("#od-pool");
+  const slotsEl = $("#od-slots");
+
+  function buildSlots() {
+    slotsEl.innerHTML = "";
+    for (let i = 0; i < q.correctOrder.length; i++) {
+      const slot = document.createElement("div");
+      slot.className = "slot" + (order[i] ? "" : " empty");
+      slot.innerHTML = `<div class="slot-num">${i + 1}</div>` +
+        (order[i] ? "" : `<div class="slot-hint">Klik ubin untuk mengisi…</div>`);
+      if (order[i]) {
+        const tile = q.tiles.find(t => t.id === order[i]);
+        const tEl = document.createElement("div");
+        tEl.className = "tile";
+        tEl.textContent = tile.text;
+        tEl.addEventListener("click", () => {
+          order.splice(i, 1);
+          pool.push(tile);
+          rebuild();
+        });
+        slot.appendChild(tEl);
+      }
+      slotsEl.appendChild(slot);
+    }
+  }
+  function buildPool() {
+    poolEl.innerHTML = "";
+    if (pool.length === 0) {
+      poolEl.innerHTML = `<div class="order-tip" style="color:#9aa6b8;">Kolam kosong — semua ubin sudah terpakai.</div>`;
+      return;
+    }
+    pool.forEach(t => {
+      const el = document.createElement("div");
+      el.className = "tile";
+      el.textContent = t.text;
+      el.addEventListener("click", () => {
+        if (order.length >= q.correctOrder.length) return;
+        pool = pool.filter(x => x.id !== t.id);
+        order.push(t.id);
+        rebuild();
+        beep(500, 0.05);
+      });
+      poolEl.appendChild(el);
+    });
+  }
+  function rebuild() { buildPool(); buildSlots(); }
+  rebuild();
+  state.getValue = () => order.slice();
+}
+
+// ---- Lock inputs after a question is finally resolved ----
+function lockInputs() {
+  card.querySelectorAll("input, button.key, .choice-btn, .tf-btn, .stepper-btn, .tile, .slot .tile")
+    .forEach(el => { el.style.pointerEvents = "none"; el.style.opacity = "0.85"; });
+}
+
+// ---- Reveal the correct answer (shown when a question is finally wrong) ----
+function revealText(q) {
+  switch (q.type) {
+    case "keypad": case "choice": case "slider": case "stepper":
+      return "Jawaban yang benar: " + q.answer + ".";
+    case "twostep": case "multistep":
+      return "Jawaban benar: " + q.steps.map(s => s.answer).join(" → ") + "  (hasil akhir " + q.answer + ").";
+    case "truefalse":
+      return "Kunci: " + q.statements.map((s, i) => "(" + (i + 1) + ") " + (s.answer ? "Benar" : "Salah")).join("   ");
+    case "orderdrag":
+      return "Urutan benar: " + q.correctOrder.map((id, i) => (i + 1) + ") " + q.tiles.find(t => t.id === id).text).join("   ");
+    default: return "";
+  }
+}
+
+// ---- Check answer (one retry chance if the first attempt is wrong) ----
+function checkAnswer() {
+  const q = QUESTIONS[state.current];
+  const val = state.getValue();
+  let correct = false, msg = "", partial = false;
+
+  switch (q.type) {
+    case "keypad":
+    case "choice":
+    case "slider":
+    case "stepper": {
+      correct = val === q.answer;
+      msg = correct ? `Hebat! Jawabannya ${q.answer}. 🎉` : `Belum tepat. 🙈`;
+      break;
+    }
+    case "twostep":
+    case "multistep": {
+      const allFilled = val.every(v => v !== null);
+      const rights = q.steps.map((s, i) => val[i] === s.answer);
+      const allRight = rights.every(r => r);
+      const rows = state.stepRows();
+      rows.forEach((row, i) => {
+        row.classList.remove("ok", "bad");
+        if (val[i] === null) return;
+        row.classList.add(rights[i] ? "ok" : "bad");
+      });
+      if (!allFilled) { correct = false; partial = true; msg = "Masih ada kotak yang kosong. Isi semua dulu ya! ✏️"; }
+      else if (allRight) { correct = true; msg = `Mantap! Semua langkah benar. Hasil akhir: ${q.answer}. 🎉`; }
+      else {
+        correct = false; partial = true;
+        const okCount = rights.filter(r => r).length;
+        msg = `${okCount} dari ${q.steps.length} langkah benar. Kotak hijau sudah benar, perbaiki kotak merah ya!`;
+      }
+      break;
+    }
+    case "truefalse": {
+      const answers = val;
+      const allFilled = answers.every(a => a !== null);
+      const rights = q.statements.map((s, i) => answers[i] === s.answer);
+      const items = state.tfItems();
+      items.forEach((item, i) => {
+        item.classList.remove("ok", "bad");
+        if (answers[i] === null) return;
+        item.classList.add(rights[i] ? "ok" : "bad");
+        const ex = item.querySelector(".tf-explain");
+        ex.textContent = rights[i] ? "✓ " + s_explainRight(q, i) : "✗ " + q.statements[i].explain;
+      });
+      if (!allFilled) { correct = false; partial = true; msg = "Jawab kedua pernyataan dulu (Benar atau Salah)!"; }
+      else {
+        const okCount = rights.filter(r => r).length;
+        if (okCount === q.statements.length) { correct = true; msg = "Sempurna! Kedua pernyataan benar jawabannya. 🎉"; }
+        else { correct = false; partial = true; msg = `${okCount} dari ${q.statements.length} pernyataan benar. Perbaiki yang masih salah ya!`; }
+      }
+      break;
+    }
+    case "orderdrag": {
+      const filled = val.length === q.correctOrder.length;
+      const same = filled && val.every((id, i) => id === q.correctOrder[i]);
+      if (!filled) { correct = false; partial = true; msg = "Susun semua ubin dulu di kolom urutan!"; }
+      else if (same) { correct = true; msg = `Urutan tepat! Maka bibit per siswa = ${q.answer}. 🎉`; }
+      else { correct = false; partial = true; msg = "Urutan belum benar. Klik ubin di kolom urutan untuk mengembalikannya, lalu susun lagi."; }
+      break;
+    }
+  }
+
+  // --- CORRECT: score once, lock, advance ---
+  if (correct) {
+    if (!state.scoredForThis) { state.score += 1; state.scoredForThis = true; }
+    state.results[state.current] = { correct: true };
+    state.answered = true;
+    feedbackEl.className = "feedback show correct";
+    feedbackEl.textContent = msg;
+    soundOk(); updateMeta();
+    lockInputs();
+    $("#check-btn").hidden = true;
+    $("#retry-btn").hidden = true;
+    $("#hint-btn").disabled = true;
+    $("#next-btn").hidden = false;
+    return;
+  }
+
+  // --- WRONG / PARTIAL ---
+  if (state.retriesUsed === 0) {
+    // first attempt failed: offer one retry, keep inputs editable
+    state.retriesUsed = 1;
+    state.results[state.current] = { correct: false };
+    feedbackEl.className = "feedback show " + (partial ? "partial" : "wrong");
+    feedbackEl.textContent = msg + "  Kamu masih punya 1 kesempatan mengulang! 🔄 Tekan tombolnya, perbaiki jawabanmu, lalu periksa lagi.";
+    soundNo();
+    $("#check-btn").hidden = true;
+    $("#retry-btn").hidden = false;
+    // hint stays enabled; inputs stay editable so the student can fix the answer
+  } else {
+    // second attempt also failed: lock, reveal the correct answer, advance
+    state.results[state.current] = { correct: false };
+    state.answered = true;
+    feedbackEl.className = "feedback show wrong";
+    feedbackEl.textContent = "Belum tepat juga. " + revealText(q) + " Jangan menyerah — soal berikutnya menanti! 💪";
+    soundNo();
+    lockInputs();
+    $("#check-btn").hidden = true;
+    $("#retry-btn").hidden = true;
+    $("#hint-btn").disabled = true;
+    $("#next-btn").hidden = false;
+  }
+}
+
+// ---- Retry: clear feedback, re-enable the check button (answer stays, editable) ----
+function retryAnswer() {
+  feedbackEl.className = "feedback";
+  feedbackEl.textContent = "";
+  $("#retry-btn").hidden = true;
+  $("#check-btn").hidden = false;
+  beep(540, 0.08);
+}
+
+function s_explainRight(q, i) {
+  // For correct answers on TF, show affirming text
+  const s = q.statements[i];
+  return s.text + " — " + (s.answer ? "memang benar." : "memang salah.");
+}
+
+// ---- Navigation ----
+function nextQuestion() {
+  if (state.current < QUESTIONS.length - 1) {
+    state.current += 1;
+    renderQuestion();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  } else {
+    showResult();
+  }
+}
+
+function showResult() {
+  $("#progress-fill").style.width = "100%";
+  showScreen("result-screen");
+  setBadge("#result-id-badge", "#result-avatar", "#result-id-text");
+  $("#final-score").textContent = state.score;
+  const stars = "⭐".repeat(state.score) + "☆".repeat(QUESTIONS.length - state.score);
+  $("#star-row").textContent = stars;
+  const nama = state.student.name || "Petualang";
+  const pct = state.score / QUESTIONS.length;
+  let msg;
+  if (pct === 1) msg = `Sempurna, ${nama}! Kamu juara pembagian! 🏆 Paman Rubah sangat bangga padamu.`;
+  else if (pct >= 0.75) msg = `Kerja bagus, ${nama}! Kamu sudah jadi petualang matematika yang tangkas. 🌟`;
+  else if (pct >= 0.5) msg = `Lumayan, ${nama}! Sedikit lagi kamu bisa menguasai pembagian. Ayo coba lagi! 💪`;
+  else msg = `Jangan menyerah, ${nama}! Setiap petualang hebat pasti pernah berlatih. Coba lagi sekali! 🌱`;
+  $("#result-message").textContent = msg;
+
+  const review = $("#review-list");
+  review.innerHTML = "";
+  QUESTIONS.forEach((q, i) => {
+    const r = state.results[i] || {};
+    const cls = r.correct ? "ok" : "no";
+    const mark = r.correct ? "✓" : "✗";
+    const li = document.createElement("li");
+    li.innerHTML = `<span class="${cls}">${mark}</span> <b>${q.title}</b>`;
+    review.appendChild(li);
+  });
+
+  soundWin();
+  launchConfetti();
+}
+
+function launchConfetti() {
+  const c = document.createElement("div");
+  c.className = "confetti";
+  document.body.appendChild(c);
+  const emojis = ["🎉", "⭐", "🎊", "🌟", "🦊", "🏆"];
+  for (let i = 0; i < 40; i++) {
+    const s = document.createElement("i");
+    s.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+    s.style.left = Math.random() * 100 + "vw";
+    s.style.animationDuration = (3 + Math.random() * 3) + "s";
+    s.style.animationDelay = Math.random() * 0.6 + "s";
+    c.appendChild(s);
+  }
+  setTimeout(() => c.remove(), 7000);
+}
+
+// ---- Hint ----
+function showHint() {
+  const q = QUESTIONS[state.current];
+  feedbackEl.className = "feedback show partial";
+  feedbackEl.textContent = "💡 " + q.hint;
+  state.hintShown = true;
+  beep(560, 0.08);
+}
+
+// ---- Init ----
+function start() {
+  const nameInput = document.getElementById("student-name");
+  const kelasInput = document.getElementById("student-class");
+  const errEl = document.getElementById("id-error");
+  const name = nameInput.value.trim();
+  if (!name) {
+    errEl.textContent = "⚠️ Isi nama dulu yuk, supaya Paman Rubah tahu siapa yang berpetualang!";
+    nameInput.focus();
+    beep(200, 0.2, "square");
+    return;
+  }
+  errEl.textContent = "";
+  state.student.name = name;
+  state.student.kelas = kelasInput.value.trim();
+  state.current = 0; state.score = 0; state.results = [];
+  setBadge("#id-badge", "#id-avatar", "#id-text");
+  showScreen("quiz-screen");
+  renderQuestion();
+}
+function restart() {
+  state.current = 0; state.score = 0; state.results = [];
+  setBadge("#id-badge", "#id-avatar", "#id-text");
+  showScreen("quiz-screen");
+  renderQuestion();
+}
+
+// Back to the start screen so a different student can play (keeps the name pre-filled)
+function changePlayer() {
+  showScreen("start-screen");
+  document.getElementById("student-name").focus();
+}
+
+$("#start-btn").addEventListener("click", start);
+$("#check-btn").addEventListener("click", checkAnswer);
+$("#retry-btn").addEventListener("click", retryAnswer);
+$("#next-btn").addEventListener("click", nextQuestion);
+$("#hint-btn").addEventListener("click", showHint);
+$("#restart-btn").addEventListener("click", restart);
+$("#change-btn").addEventListener("click", changePlayer);
+
+// keyboard support: Enter starts / checks / advances
+document.addEventListener("keydown", (e) => {
+  if (e.key !== "Enter") return;
+  if (document.getElementById("start-screen").classList.contains("active")) { $("#start-btn").click(); return; }
+  if (!document.getElementById("quiz-screen").classList.contains("active")) return;
+  if (!$("#check-btn").hidden) $("#check-btn").click();
+  else if (!$("#next-btn").hidden) $("#next-btn").click();
+});
+</script>
+</body>
+</html>
